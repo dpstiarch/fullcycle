@@ -93,18 +93,22 @@ func main() {
 	go taskViaCep(cep, &wg, ch)
 	go taskBrasilApi(cep, &wg, ch)
 
-	retorno := <-ch
+	select {
 
-	if retorno.Origem == "BrasilAPI" {
+	case retorno := <-ch:
+		if retorno.Origem == "BrasilAPI" {
 
-		fmt.Printf("["+retorno.Origem+"] Finalizou primeiro em %v\n", time.Since(tempoInicial))
-		fmt.Printf("CEP: %s\nLogradouro: %s\nBairro: %s\nCidade: %s\nEstado: %s\n",
-			retorno.BrasilAPI.Cep, retorno.BrasilAPI.Logradouro, retorno.BrasilAPI.Bairro, retorno.BrasilAPI.Cidade,
-			retorno.BrasilAPI.Estado)
-	} else {
-		fmt.Printf("["+retorno.Origem+"] Finalizou primeiro em %v\n", time.Since(tempoInicial))
-		fmt.Printf("CEP: %s\nLogradouro: %s\nBairro: %s\nCidade: %s\nEstado: %s\n",
-			retorno.ViaCEP.Cep, retorno.ViaCEP.Logradouro, retorno.ViaCEP.Bairro, retorno.ViaCEP.Cidade, retorno.ViaCEP.Estado)
+			fmt.Printf("["+retorno.Origem+"] Finalizou primeiro em %v\n", time.Since(tempoInicial))
+			fmt.Printf("CEP: %s\nLogradouro: %s\nBairro: %s\nCidade: %s\nEstado: %s\n",
+				retorno.BrasilAPI.Cep, retorno.BrasilAPI.Logradouro, retorno.BrasilAPI.Bairro, retorno.BrasilAPI.Cidade,
+				retorno.BrasilAPI.Estado)
+		} else {
+			fmt.Printf("["+retorno.Origem+"] Finalizou primeiro em %v\n", time.Since(tempoInicial))
+			fmt.Printf("CEP: %s\nLogradouro: %s\nBairro: %s\nCidade: %s\nEstado: %s\n",
+				retorno.ViaCEP.Cep, retorno.ViaCEP.Logradouro, retorno.ViaCEP.Bairro, retorno.ViaCEP.Cidade, retorno.ViaCEP.Estado)
+		}
+	case <-time.After(time.Second * 1):
+		println("Conexão excedida: erro de timeout")
 	}
 	fmt.Println("================================================================")
 	fmt.Println("")
